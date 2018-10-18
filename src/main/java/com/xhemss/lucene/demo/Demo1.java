@@ -79,6 +79,5 @@ public class Demo1 {
         // 根据searcher搜索并且返回TopDocs
         TopDocs topDocs=indexSearcher.search(multiFieldQuery,100);
         System.out.println("共找到匹配处：" + topDocs.totalHits); // totalHits和scoreDocs.length的区别还没搞明白
-
     }
 }
