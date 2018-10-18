@@ -1,14 +1,6 @@
 package com.xhemss.lucene;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -29,6 +21,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.wltea.analyzer.lucene.IKAnalyzer;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchTest {
 
@@ -259,6 +257,9 @@ public class SearchTest {
             Document doc = indexSearcher.doc(scoreDoc.doc);
             System.out.println(doc.get("id"));
         }
+        //分页查询
+//        indexSearcher.searchAfter()
+
         //高亮显示start
         //算分
         QueryScorer scorer=new QueryScorer(query);
@@ -330,6 +331,95 @@ public class SearchTest {
                 }
             }
         }
+    }
 
+
+    /**
+     * 分页报错，不可用
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午3:54:55<br/>
+     * 机能概要:通过IndexSearcher.searchAfter
+     */
+    @Test
+    public void testQueryByPager2() {
+        int pageNow=1;
+        int pageSize=2;
+        try {
+            QueryParser parser = new QueryParser("content", analyzer);
+            Query query = parser.parse("chapter:第五十五条");
+            // 创建IndexSearcher
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            int start = (pageNow - 1) * pageSize;
+            // 查询数据， 结束页面自前的数据都会查询到，但是只取本页的数据
+            TopDocs topDocs = searcher.search(query, start);
+            //获取到上一页最后一条
+//            ScoreDoc preScore = topDocs.scoreDocs[start-1];
+            ScoreDoc preScore = topDocs.scoreDocs[0];
+
+            //查询最后一条后的数据的一页数据
+            topDocs = searcher.searchAfter(preScore, query, pageSize);
+            ScoreDoc[] scores = topDocs.scoreDocs;
+
+            System.out.println("查询到的条数\t" + topDocs.totalHits);
+            //读取数据
+            for (int i = 0; i < scores.length; i++) {
+                Document doc = reader.document(scores[i].doc);
+                System.out.println(doc.get("id") + ":" + doc.get("chapter") + ":" + doc.get("content"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+//            coloseReader(reader);
+        }
+    }
+
+    /**
+     * 可用
+     * 创建用户:狂飙的yellowcong<br/>
+     * 创建日期:2017年12月3日<br/>
+     * 创建时间:下午3:37:17<br/>
+     * 机能概要: 查询所有数据后再进行分页
+     */
+    @Test
+    public void testQueryByPager1(){
+        int pageNow=3;
+        int pageSize=2;
+        try {
+
+            QueryParser parser = new QueryParser("content", analyzer);
+            Query query = parser.parse("chapter:第五十五条第二款");
+
+            //创建IndexSearcher
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            //查询数据， 结束页面自前的数据都会查询到，但是只取本页的数据
+            TopDocs topDocs = searcher.search(query, 100);
+
+            System.out.println("查询到的条数\t"+topDocs.totalHits);
+            ScoreDoc [] scores = topDocs.scoreDocs;
+            for(ScoreDoc scoreDoc:scores){
+                System.out.println(indexSearcher.doc(scoreDoc.doc).get("id"));
+            }
+            System.out.println("分页数据---");
+            //查询起始记录位置
+            int begin = pageSize * (pageNow - 1) ;
+            //查询终止记录位置
+            int end = Math.min(begin + pageSize, scores.length);
+
+            //进行分页查询
+            for(int i=begin;i<end;i++) {
+                int docID = scores[i].doc;
+//                Explanation explanation = indexSearcher.explain(query, docID);
+//                System.out.println(explanation.toString());
+                Document doc = indexSearcher.doc(docID);
+                System.out.println(doc.get("id")+":"+doc.get("chapter")+":"+doc.get("content"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally{
+//            coloseReader(reader);
+        }
     }
 }
