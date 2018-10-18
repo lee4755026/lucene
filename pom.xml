@@ -88,6 +88,13 @@
 			<version>7.5.0</version>
 		</dependency>
 
+		<!--ik中文分词-->
+		<dependency>
+			<groupId>com.github.magese</groupId>
+			<artifactId>ik-analyzer</artifactId>
+			<version>7.5.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

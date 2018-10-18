@@ -16,6 +16,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -34,7 +35,8 @@ public class Demo1 {
 //        Analyzer analyzer = new SmartChineseAnalyzer(true);
         CharArraySet set=new CharArraySet(1,true);
         set.add("互监组");
-        Analyzer analyzer = new SmartChineseAnalyzer(set);
+//        Analyzer analyzer = new SmartChineseAnalyzer(set);
+        Analyzer analyzer = new IKAnalyzer();
         //实例化索引配置，用来存放分析器
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         //实例化索引写入对象
@@ -55,7 +57,7 @@ public class Demo1 {
         document.add(new Field("address", "中国上海", TextField.TYPE_STORED));
         document.add(new Field("dosometing", "I am learning lucene ", TextField.TYPE_STORED));
         indexWriter.addDocument(document);
-
+        document=new Document();
         document.add(new Field("name", "张三", TextField.TYPE_STORED));
         document.add(new Field("address", "互监组当月无违规，加10分。", TextField.TYPE_STORED));
         document.add(new Field("dosometing", "考核加分", TextField.TYPE_STORED));

@@ -8,6 +8,7 @@ import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -20,6 +21,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class SearchTest {
 
@@ -123,7 +125,8 @@ public class SearchTest {
         // 标准分词器
         CharArraySet set=new CharArraySet(1,true);
         set.add("互监组");
-        Analyzer analyzer = new SmartChineseAnalyzer(set);
+//        Analyzer analyzer = new SmartChineseAnalyzer(set);
+        Analyzer analyzer = new IKAnalyzer();
         String searchField = "address";
         String q = "互监组";
         String q2 = "上海广州人民欢迎你";
@@ -168,6 +171,13 @@ public class SearchTest {
             String address = document.get("address");
             //第一个参数是对哪个参数进行设置；第二个是以流的方式读入
             TokenStream tokenStream=analyzer.tokenStream("address",new StringReader(address));
+            CharTermAttribute term=tokenStream.getAttribute(CharTermAttribute.class);
+            //遍历分词数据
+            while(tokenStream.incrementToken()){
+             System.out.print(term.toString()+"|");
+            }
+            System.out.print(term);
+
             //获取最高的片段
             System.out.println("高亮片段是："+highlighter.getBestFragment(tokenStream, address));
         }
